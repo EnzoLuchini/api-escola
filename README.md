@@ -58,13 +58,23 @@ A imagem da aplicação está publicada no Docker Hub e pode ser executada **sem
 
 - **Repositório:** [`eluchini/api-escola`](https://hub.docker.com/r/eluchini/api-escola)
 
-### 1. Download da imagem (docker pull)
+### 1. Subir o banco de dados (MySQL)
+
+A aplicação precisa de um banco **MySQL** disponível. Caso ainda não possua um, suba um container MySQL com o comando abaixo (as credenciais coincidem com as variáveis usadas na execução da API):
+
+```sh
+docker run -d --name mysql -e MYSQL_ROOT_PASSWORD=root_pwd -p 3306:3306 mysql
+```
+
+> No profile `default`, a aplicação cria automaticamente o schema (`school`) e as tabelas ao iniciar, então **não é necessário criar o banco manualmente**.
+
+### 2. Download da imagem (docker pull)
 
 ```sh
 docker pull eluchini/api-escola:1.1.0
 ```
 
-### 2. Execução do container (docker run)
+### 3. Execução do container (docker run)
 
 O comando abaixo mapeia a porta **8080**, define o **profile** e informa todas as **variáveis de ambiente** necessárias para a conexão com o banco de dados:
 
@@ -74,7 +84,7 @@ docker run -d --name api-escola \
   -e SPRING_PROFILES_ACTIVE=default \
   -e DB_SERVER_URL=host.docker.internal \
   -e DB_SERVER_PORT=3306 \
-  -e DB_SCHEMA=db_api \
+  -e DB_SCHEMA=school \
   -e DB_USER=root \
   -e DB_PWD=root_pwd \
   eluchini/api-escola:1.1.0
@@ -83,23 +93,23 @@ docker run -d --name api-escola \
 No **Windows PowerShell**, use `` ` `` (crase) no lugar de `\` para quebrar a linha, ou informe tudo em uma única linha:
 
 ```powershell
-docker run -d --name api-escola -p 8080:8080 -e SPRING_PROFILES_ACTIVE=default -e DB_SERVER_URL=host.docker.internal -e DB_SERVER_PORT=3306 -e DB_SCHEMA=db_api -e DB_USER=root -e DB_PWD=root_pwd eluchini/api-escola:1.1.0
+docker run -d --name api-escola -p 8080:8080 -e SPRING_PROFILES_ACTIVE=default -e DB_SERVER_URL=host.docker.internal -e DB_SERVER_PORT=3306 -e DB_SCHEMA=school -e DB_USER=root -e DB_PWD=root_pwd eluchini/api-escola:1.1.0
 ```
 
 > **Nota:** `host.docker.internal` permite que o container acesse um banco de dados que esteja rodando na **máquina host**. Ajuste `DB_SERVER_URL` caso o banco esteja em outro endereço.
 
-### 3. Variáveis de ambiente necessárias
+### 4. Variáveis de ambiente necessárias
 
 | Variável | Descrição | Exemplo |
 |---|---|---|
 | `SPRING_PROFILES_ACTIVE` | Profile ativo do Spring Boot (`default` ou `prd`) | `prd` |
 | `DB_SERVER_URL` | Endereço do servidor do banco de dados | `host.docker.internal` |
 | `DB_SERVER_PORT` | Porta do banco de dados | `3306` |
-| `DB_SCHEMA` | Nome do schema/banco | `db_api` |
+| `DB_SCHEMA` | Nome do schema/banco | `school` |
 | `DB_USER` | Usuário do banco de dados | `root` |
 | `DB_PWD` | Senha do banco de dados | `root_pwd` |
 
-### 4. Acesso ao Swagger / OpenAPI
+### 5. Acesso ao Swagger / OpenAPI
 
 Com o container em execução, a documentação interativa da API fica disponível em:
 
@@ -196,7 +206,7 @@ docker run \
   -p 8080:8080 \
   -e DB_SERVER_URL=host.docker.internal \
   -e DB_SERVER_PORT=3306 \
-  -e DB_SCHEMA=db_api \
+  -e DB_SCHEMA=school \
   -e DB_USER=root \
   -e DB_PWD=root_pwd \
   -e SPRING_PROFILES_ACTIVE=default \
@@ -293,7 +303,7 @@ docker run \
   -p 8080:8080 \
   -e DB_SERVER_URL=host.docker.internal \
   -e DB_SERVER_PORT=3306 \
-  -e DB_SCHEMA=db_api \
+  -e DB_SCHEMA=school \
   -e DB_USER=root \
   -e DB_PWD=root_pwd \
   -e SPRING_PROFILES_ACTIVE=prd \
