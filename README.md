@@ -52,6 +52,66 @@ DELETE /cursos/{id}: Remove um curso do sistema.
 
 ---
 
+## 🐳 Execução a partir da imagem publicada no Docker Hub
+
+A imagem da aplicação está publicada no Docker Hub e pode ser executada **sem a necessidade de clonar o projeto ou compilar o código**.
+
+- **Repositório:** [`eluchini/api-escola`](https://hub.docker.com/r/eluchini/api-escola)
+
+### 1. Download da imagem (docker pull)
+
+```sh
+docker pull eluchini/api-escola:1.1.0
+```
+
+### 2. Execução do container (docker run)
+
+O comando abaixo mapeia a porta **8080**, define o **profile** e informa todas as **variáveis de ambiente** necessárias para a conexão com o banco de dados:
+
+```sh
+docker run -d --name api-escola \
+  -p 8080:8080 \
+  -e SPRING_PROFILES_ACTIVE=default \
+  -e DB_SERVER_URL=host.docker.internal \
+  -e DB_SERVER_PORT=3306 \
+  -e DB_SCHEMA=db_api \
+  -e DB_USER=root \
+  -e DB_PWD=root_pwd \
+  eluchini/api-escola:1.1.0
+```
+
+No **Windows PowerShell**, use `` ` `` (crase) no lugar de `\` para quebrar a linha, ou informe tudo em uma única linha:
+
+```powershell
+docker run -d --name api-escola -p 8080:8080 -e SPRING_PROFILES_ACTIVE=default -e DB_SERVER_URL=host.docker.internal -e DB_SERVER_PORT=3306 -e DB_SCHEMA=db_api -e DB_USER=root -e DB_PWD=root_pwd eluchini/api-escola:1.1.0
+```
+
+> **Nota:** `host.docker.internal` permite que o container acesse um banco de dados que esteja rodando na **máquina host**. Ajuste `DB_SERVER_URL` caso o banco esteja em outro endereço.
+
+### 3. Variáveis de ambiente necessárias
+
+| Variável | Descrição | Exemplo |
+|---|---|---|
+| `SPRING_PROFILES_ACTIVE` | Profile ativo do Spring Boot (`default` ou `prd`) | `prd` |
+| `DB_SERVER_URL` | Endereço do servidor do banco de dados | `host.docker.internal` |
+| `DB_SERVER_PORT` | Porta do banco de dados | `3306` |
+| `DB_SCHEMA` | Nome do schema/banco | `db_api` |
+| `DB_USER` | Usuário do banco de dados | `root` |
+| `DB_PWD` | Senha do banco de dados | `root_pwd` |
+
+### 4. Acesso ao Swagger / OpenAPI
+
+Com o container em execução, a documentação interativa da API fica disponível em:
+
+| Recurso | URL |
+|---|---|
+| **Swagger UI** | [http://localhost:8080/](http://localhost:8080/) |
+| **OpenAPI (JSON)** | [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs) |
+
+Pela **Swagger UI** é possível visualizar e testar todos os endpoints de `Alunos` e `Cursos` diretamente pelo navegador.
+
+---
+
 ## 🚀 Execução local
 
 ### 1. Configuração das variáveis de ambiente
@@ -65,7 +125,7 @@ A aplicação utiliza variáveis de ambiente para configurar a conexão com o ba
 | `DB_SCHEMA` | Nome do schema | `dbprd` |
 | `DB_USER` | Usuário do banco de dados | `root` |
 | `DB_PWD` | Senha do banco de dados | `root_pwd` |
-| `SPRING_PROFILES_ACTIVE` | Profile ativo do Spring Boot | `dev` |
+| `SPRING_PROFILES_ACTIVE` | Profile ativo do Spring Boot | `default` |
 
 ### Linux / macOS
 
@@ -75,7 +135,7 @@ export DB_SERVER_PORT=3306
 export DB_SCHEMA=dbprd
 export DB_USER=root
 export DB_PWD=root_pwd
-export SPRING_PROFILES_ACTIVE=dev
+export SPRING_PROFILES_ACTIVE=default
 ```
 
 ### Windows PowerShell
@@ -86,7 +146,7 @@ $env:DB_SERVER_PORT="3306"
 $env:DB_SCHEMA="dbprd"
 $env:DB_USER="root"
 $env:DB_PWD="root_pwd"
-$env:SPRING_PROFILES_ACTIVE="dev"
+$env:SPRING_PROFILES_ACTIVE="default"
 ```
 
 ### 2. Executar a aplicação
@@ -139,7 +199,7 @@ docker run \
   -e DB_SCHEMA=db_api \
   -e DB_USER=root \
   -e DB_PWD=root_pwd \
-  -e SPRING_PROFILES_ACTIVE=prd \
+  -e SPRING_PROFILES_ACTIVE=default \
   sistema-escolar-api:1.1
 ```
 
@@ -163,10 +223,10 @@ SPRING_PROFILES_ACTIVE
 
 ### Desenvolvimento
 
-Para executar utilizando o profile `dev`:
+Para executar utilizando o profile `default`:
 
 ```sh
-export SPRING_PROFILES_ACTIVE=dev
+export SPRING_PROFILES_ACTIVE=default
 ```
 
 ### Produção
@@ -211,7 +271,7 @@ DB_SERVER_PORT=3306
 DB_SCHEMA=dbprd
 DB_USER=root
 DB_PWD=root_pwd
-SPRING_PROFILES_ACTIVE=dev
+SPRING_PROFILES_ACTIVE=default
 ```
 
 > **Importante:** evite armazenar senhas, tokens ou outras credenciais diretamente no código-fonte ou no repositório Git.
@@ -223,7 +283,7 @@ SPRING_PROFILES_ACTIVE=dev
 ### Criar a imagem
 
 ```sh
-docker build -t study-api:1.1 .
+docker build -t api-escola:1.1.0
 ```
 
 ### Executar o container
@@ -296,7 +356,7 @@ DB_SERVER_PORT=3306
 DB_SCHEMA=dbprd
 DB_USER=root
 DB_PWD=root_pwd
-SPRING_PROFILES_ACTIVE=dev
+SPRING_PROFILES_ACTIVE=default
 ```
 
 O arquivo `.env.example` pode ser versionado, enquanto o `.env` contendo credenciais reais deve permanecer fora do repositório.
