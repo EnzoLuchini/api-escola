@@ -1,54 +1,73 @@
 # Sistema Escolar API
 
-Esta API foi desenvolvida como parte do Check Point 2 da disciplina de Microservices and Web Engineering (2026). O objetivo do projeto é evoluir uma aplicação Spring Boot para uma API RESTful completa, com persistência de dados em um banco de dados relacional (MySQL) utilizando Docker.
+Esta API foi desenvolvida como parte do Check Point 2 da disciplina de Microservices and Web Engineering (2026). O objetivo do projeto é construir uma API RESTful completa em Spring Boot, com persistência de dados em um banco de dados relacional **SQL Server**, utilizando Docker.
 
 ## 📋 Pré-requisitos
 
 Para executar o projeto localmente, você precisará ter instalado:
 
-- Java
+- Java 21
 - Maven
-- MySQL
+- SQL Server
 - Docker (opcional)
 
 ---
 
-📋 Requisitos do Projeto
+## 📋 Requisitos do Projeto
+
 A aplicação atende aos seguintes critérios técnicos:
 
-Entidades: Possui as entidades Aluno e Curso, cada uma com pelo menos 5 atributos e mapeamento para tabelas no plural (alunos e cursos).
-
-Persistência: Implementação de JpaRepository para ambas as entidades.
-
-CRUD Completo: Endpoints para Criar, Ler (Buscar todos e por ID), Atualizar e Deletar.
-
-Porta: A aplicação está configurada para rodar obrigatoriamente na porta 8080.
----
+- **Entidades:** Possui as entidades `Aluno` e `Curso`, cada uma com pelo menos 5 atributos e mapeamento para tabelas no plural (`alunos` e `cursos`).
+- **Persistência:** Implementação de `JpaRepository` (Spring Data JPA) para ambas as entidades.
+- **CRUD Completo:** Endpoints para Criar, Ler (Buscar todos e por ID), Atualizar e Deletar.
+- **Banco de dados:** Conexão com **SQL Server** via driver `mssql-jdbc`.
+- **Porta:** A aplicação está configurada para rodar na porta `8080`.
 
 ---
-🏗️ Estrutura de Endpoints
-Alunos
-GET /alunos: Lista todos os alunos registrados.
 
-GET /alunos/{id}: Busca um aluno específico pelo ID.
+## 🏗️ Estrutura de Endpoints
 
-POST /alunos: Registra um novo aluno.
+### Alunos
 
-PUT /alunos/{id}: Atualiza os dados de um aluno existente.
+- `GET /alunos` — Lista todos os alunos registrados.
+- `GET /alunos/{id}` — Busca um aluno específico pelo ID.
+- `POST /alunos` — Registra um novo aluno.
+- `PUT /alunos/{id}` — Atualiza os dados de um aluno existente.
+- `DELETE /alunos/{id}` — Remove um aluno do sistema.
 
-DELETE /alunos/{id}: Remove um aluno do sistema.
+### Cursos
 
-Cursos
-GET /cursos: Lista todos os cursos registrados.
+- `GET /cursos` — Lista todos os cursos registrados.
+- `GET /cursos/{id}` — Busca um curso específico pelo ID.
+- `POST /cursos` — Registra um novo curso.
+- `PUT /cursos/{id}` — Atualiza os dados de um curso existente.
+- `DELETE /cursos/{id}` — Remove um curso do sistema.
 
-GET /cursos/{id}: Busca um curso específico pelo ID.
+### Exemplo de corpo (JSON)
 
-POST /cursos: Registra um novo curso.
+**Aluno**
 
-PUT /cursos/{id}: Atualiza os dados de um curso existente.
+```json
+{
+  "id": 1,
+  "nome": "Maria Silva",
+  "email": "maria@example.com",
+  "rm": 12345,
+  "senha": "senha123"
+}
+```
 
-DELETE /cursos/{id}: Remove um curso do sistema.
----
+**Curso**
+
+```json
+{
+  "id": 1,
+  "nome": "Análise e Desenvolvimento de Sistemas",
+  "reitor": "João Souza",
+  "notaMec": 4.5,
+  "nivel": "Superior"
+}
+```
 
 ---
 
@@ -58,15 +77,25 @@ A imagem da aplicação está publicada no Docker Hub e pode ser executada **sem
 
 - **Repositório:** [`eluchini/api-escola`](https://hub.docker.com/r/eluchini/api-escola)
 
-### 1. Subir o banco de dados (MySQL)
+### 1. Subir o banco de dados (SQL Server)
 
-A aplicação precisa de um banco **MySQL** disponível. Caso ainda não possua um, suba um container MySQL com o comando abaixo (as credenciais coincidem com as variáveis usadas na execução da API):
+A aplicação precisa de um **SQL Server** disponível. Caso ainda não possua um, suba um container SQL Server com o comando abaixo (a senha coincide com a variável usada na execução da API):
 
 ```sh
-docker run -d --name mysql -e MYSQL_ROOT_PASSWORD=root_pwd -p 3306:3306 mysql
+docker run -d --name sqlserver \
+  -e "ACCEPT_EULA=Y" \
+  -e "MSSQL_SA_PASSWORD=1q2w3e4R@" \
+  -p 1433:1433 \
+  mcr.microsoft.com/mssql/server:2022-latest
 ```
 
-> No profile `default`, a aplicação cria automaticamente o schema (`school`) e as tabelas ao iniciar, então **não é necessário criar o banco manualmente**.
+> No profile `default`, a aplicação cria automaticamente as tabelas (`ddl-auto=update`) ao iniciar. É necessário, porém, que o banco (schema) `school` já exista no SQL Server. Crie-o com:
+>
+> ```sh
+> docker exec -i sqlserver /opt/mssql-tools18/bin/sqlcmd \
+>   -S localhost -U sa -P "1q2w3e4R@" -C \
+>   -Q "CREATE DATABASE school"
+> ```
 
 ### 2. Download da imagem (docker pull)
 
@@ -83,17 +112,17 @@ docker run -d --name api-escola \
   -p 8080:8080 \
   -e SPRING_PROFILES_ACTIVE=default \
   -e DB_SERVER_URL=host.docker.internal \
-  -e DB_SERVER_PORT=3306 \
+  -e DB_SERVER_PORT=1433 \
   -e DB_SCHEMA=school \
-  -e DB_USER=root \
-  -e DB_PWD=root_pwd \
+  -e DB_USER=sa \
+  -e DB_PWD=1q2w3e4R@ \
   eluchini/api-escola:1.1.0
 ```
 
 No **Windows PowerShell**, use `` ` `` (crase) no lugar de `\` para quebrar a linha, ou informe tudo em uma única linha:
 
 ```powershell
-docker run -d --name api-escola -p 8080:8080 -e SPRING_PROFILES_ACTIVE=default -e DB_SERVER_URL=host.docker.internal -e DB_SERVER_PORT=3306 -e DB_SCHEMA=school -e DB_USER=root -e DB_PWD=root_pwd eluchini/api-escola:1.1.0
+docker run -d --name api-escola -p 8080:8080 -e SPRING_PROFILES_ACTIVE=default -e DB_SERVER_URL=host.docker.internal -e DB_SERVER_PORT=1433 -e DB_SCHEMA=school -e DB_USER=sa -e DB_PWD=1q2w3e4R@ eluchini/api-escola:1.1.0
 ```
 
 > **Nota:** `host.docker.internal` permite que o container acesse um banco de dados que esteja rodando na **máquina host**. Ajuste `DB_SERVER_URL` caso o banco esteja em outro endereço.
@@ -102,12 +131,12 @@ docker run -d --name api-escola -p 8080:8080 -e SPRING_PROFILES_ACTIVE=default -
 
 | Variável | Descrição | Exemplo |
 |---|---|---|
-| `SPRING_PROFILES_ACTIVE` | Profile ativo do Spring Boot (`default` ou `prd`) | `prd` |
+| `SPRING_PROFILES_ACTIVE` | Profile ativo do Spring Boot (`default` ou `prd`) | `default` |
 | `DB_SERVER_URL` | Endereço do servidor do banco de dados | `host.docker.internal` |
-| `DB_SERVER_PORT` | Porta do banco de dados | `3306` |
-| `DB_SCHEMA` | Nome do schema/banco | `school` |
-| `DB_USER` | Usuário do banco de dados | `root` |
-| `DB_PWD` | Senha do banco de dados | `root_pwd` |
+| `DB_SERVER_PORT` | Porta do banco de dados (SQL Server) | `1433` |
+| `DB_SCHEMA` | Nome do banco/database | `school` |
+| `DB_USER` | Usuário do banco de dados | `sa` |
+| `DB_PWD` | Senha do banco de dados | `1q2w3e4R@` |
 
 ### 5. Acesso ao Swagger / OpenAPI
 
@@ -131,20 +160,22 @@ A aplicação utiliza variáveis de ambiente para configurar a conexão com o ba
 | Variável | Descrição | Exemplo |
 |---|---|---|
 | `DB_SERVER_URL` | Endereço do servidor do banco de dados | `localhost` |
-| `DB_SERVER_PORT` | Porta do banco de dados | `3306` |
-| `DB_SCHEMA` | Nome do schema | `dbprd` |
-| `DB_USER` | Usuário do banco de dados | `root` |
-| `DB_PWD` | Senha do banco de dados | `root_pwd` |
+| `DB_SERVER_PORT` | Porta do banco de dados (SQL Server) | `1433` |
+| `DB_SCHEMA` | Nome do banco/database | `school` |
+| `DB_USER` | Usuário do banco de dados | `sa` |
+| `DB_PWD` | Senha do banco de dados | `1q2w3e4R@` |
 | `SPRING_PROFILES_ACTIVE` | Profile ativo do Spring Boot | `default` |
+
+> No profile `default` essas variáveis possuem valores padrão (ver `application-default.properties`), então a aplicação sobe mesmo sem defini-las, desde que exista um SQL Server acessível em `host.docker.internal:1433` com o banco `school`. No profile `prd` as variáveis são obrigatórias.
 
 ### Linux / macOS
 
 ```sh
 export DB_SERVER_URL=localhost
-export DB_SERVER_PORT=3306
-export DB_SCHEMA=dbprd
-export DB_USER=root
-export DB_PWD=root_pwd
+export DB_SERVER_PORT=1433
+export DB_SCHEMA=school
+export DB_USER=sa
+export DB_PWD=1q2w3e4R@
 export SPRING_PROFILES_ACTIVE=default
 ```
 
@@ -152,10 +183,10 @@ export SPRING_PROFILES_ACTIVE=default
 
 ```powershell
 $env:DB_SERVER_URL="localhost"
-$env:DB_SERVER_PORT="3306"
-$env:DB_SCHEMA="dbprd"
-$env:DB_USER="root"
-$env:DB_PWD="root_pwd"
+$env:DB_SERVER_PORT="1433"
+$env:DB_SCHEMA="school"
+$env:DB_USER="sa"
+$env:DB_PWD="1q2w3e4R@"
 $env:SPRING_PROFILES_ACTIVE="default"
 ```
 
@@ -187,7 +218,7 @@ http://localhost:8080
 
 ---
 
-## 🐳 Execução com Docker
+## 🐳 Execução com Docker (build local)
 
 ### 1. Criar a imagem
 
@@ -205,10 +236,10 @@ Caso o banco de dados esteja sendo executado na máquina host, utilize `host.doc
 docker run \
   -p 8080:8080 \
   -e DB_SERVER_URL=host.docker.internal \
-  -e DB_SERVER_PORT=3306 \
+  -e DB_SERVER_PORT=1433 \
   -e DB_SCHEMA=school \
-  -e DB_USER=root \
-  -e DB_PWD=root_pwd \
+  -e DB_USER=sa \
+  -e DB_PWD=1q2w3e4R@ \
   -e SPRING_PROFILES_ACTIVE=default \
   sistema-escolar-api:1.1
 ```
@@ -231,17 +262,17 @@ O profile ativo da aplicação é definido através da variável de ambiente:
 SPRING_PROFILES_ACTIVE
 ```
 
-### Desenvolvimento
+### Desenvolvimento (`default`)
 
-Para executar utilizando o profile `default`:
+Possui valores padrão para a conexão com o SQL Server e habilita `show-sql` e `ddl-auto=update`.
 
 ```sh
 export SPRING_PROFILES_ACTIVE=default
 ```
 
-### Produção
+### Produção (`prd`)
 
-Para executar utilizando o profile `prd`:
+Exige todas as variáveis de ambiente e usa `ddl-auto=none`.
 
 ```sh
 export SPRING_PROFILES_ACTIVE=prd
@@ -277,10 +308,10 @@ SPRING_PROFILES_ACTIVE
 
 ```text
 DB_SERVER_URL=localhost
-DB_SERVER_PORT=3306
-DB_SCHEMA=dbprd
-DB_USER=root
-DB_PWD=root_pwd
+DB_SERVER_PORT=1433
+DB_SCHEMA=school
+DB_USER=sa
+DB_PWD=1q2w3e4R@
 SPRING_PROFILES_ACTIVE=default
 ```
 
@@ -293,7 +324,7 @@ SPRING_PROFILES_ACTIVE=default
 ### Criar a imagem
 
 ```sh
-docker build -t api-escola:1.1.0
+docker build -t sistema-escolar-api:1.1 .
 ```
 
 ### Executar o container
@@ -302,10 +333,10 @@ docker build -t api-escola:1.1.0
 docker run \
   -p 8080:8080 \
   -e DB_SERVER_URL=host.docker.internal \
-  -e DB_SERVER_PORT=3306 \
+  -e DB_SERVER_PORT=1433 \
   -e DB_SCHEMA=school \
-  -e DB_USER=root \
-  -e DB_PWD=root_pwd \
+  -e DB_USER=sa \
+  -e DB_PWD=1q2w3e4R@ \
   -e SPRING_PROFILES_ACTIVE=prd \
   sistema-escolar-api:1.1
 ```
@@ -362,10 +393,10 @@ Para facilitar a configuração de novos ambientes, pode ser criado um arquivo `
 
 ```env
 DB_SERVER_URL=localhost
-DB_SERVER_PORT=3306
-DB_SCHEMA=dbprd
-DB_USER=root
-DB_PWD=root_pwd
+DB_SERVER_PORT=1433
+DB_SCHEMA=school
+DB_USER=sa
+DB_PWD=1q2w3e4R@
 SPRING_PROFILES_ACTIVE=default
 ```
 
