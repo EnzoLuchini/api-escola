@@ -153,7 +153,25 @@ Pela **Swagger UI** é possível visualizar e testar todos os endpoints de `Alun
 
 ## 🚀 Execução local
 
-### 1. Configuração das variáveis de ambiente
+### 1. Criar o banco de dados
+
+A aplicação cria automaticamente as **tabelas** (`ddl-auto=update`), mas **não cria o database** no SQL Server. Portanto, o banco `school` precisa existir antes de subir a aplicação.
+
+Se estiver usando o SQL Server em container, crie o banco com:
+
+```sh
+docker exec -i sqlserver /opt/mssql-tools18/bin/sqlcmd \
+  -S localhost -U sa -P "1q2w3e4R@" -C \
+  -Q "CREATE DATABASE school"
+```
+
+Ou, em qualquer cliente SQL Server (sqlcmd, Azure Data Studio, SSMS), execute:
+
+```sql
+CREATE DATABASE school;
+```
+
+### 2. Configuração das variáveis de ambiente
 
 A aplicação utiliza variáveis de ambiente para configurar a conexão com o banco de dados e o profile do Spring Boot.
 
@@ -190,7 +208,7 @@ $env:DB_PWD="1q2w3e4R@"
 $env:SPRING_PROFILES_ACTIVE="default"
 ```
 
-### 2. Executar a aplicação
+### 3. Executar a aplicação
 
 Com Maven:
 
